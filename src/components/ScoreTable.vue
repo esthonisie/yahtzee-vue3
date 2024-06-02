@@ -1,20 +1,20 @@
 <script setup>
-  import { ref, computed } from 'vue'
+  import { computed } from 'vue'
 
   const props = defineProps({
     diceRolled: Array
   });
 
-  const itemsLeftPad = ref([
-    {name: "aces", diceNr: 1},
-    {name: "twos", diceNr: 2},
-    {name: "threes", diceNr: 3},
-    {name: "fours", diceNr: 4},
-    {name: "fives", diceNr: 5},
-    {name: "sixes", diceNr: 6},
-  ]);
+  const itemsLeftPad = {
+    1: {name: "aces"},
+    2: {name: "twos"},
+    3: {name: "threes"},
+    4: {name: "fours"},
+    5: {name: "fives"},
+    6: {name: "sixes"},
+  };
 
-  const itemsRightPad = ref([
+  const itemsRightPad = [
     {name: "3 of a kind", description: "sum of all dice"},
     {name: "4 of a kind", description: "sum of all dice"},
     {name: "full house", description: "25 points"},
@@ -22,37 +22,62 @@
     {name: "large straight", description: "40 points"},
     {name: "5 of a kind", description: "50 points"},
     {name: "chance", description: "sum of all dice"},
-  ]);
+  ];
 
-  const diceCalcQuantity = computed(() => {
-    const rollResult = {
-      1: 0,
-      2: 0,
-      3: 0,
-      4: 0,
-      5: 0,
-      6: 0
-    };
+  // FUNCTIONS LEFT PAD
+
+  const calcQuantity = computed(() => {
+    const quantityResult = {};
+
+    for (let diceNr = 1; diceNr <= 6; diceNr++) {
+      quantityResult[diceNr] = {quantity: 0};
+    }
 
     props.diceRolled.forEach(element => {
-      rollResult[element]++;
+      quantityResult[element].quantity++;
     });
-      
-    return rollResult;   
+    
+    return quantityResult;   
   });
+
+  const calcPointsDice = computed(() => {
+    const pointsDiceResult = {};
+    
+    for (const [key, value] of Object.entries(calcQuantity.value)) {
+      pointsDiceResult[key] = {points: (key * value.quantity)};
+    }
+
+    return pointsDiceResult;   
+  });
+
+  const calcSubtotalDice = computed(() => {
+    let sum = 0;
+
+    Object.values(calcPointsDice.value).forEach(value => {
+      sum += value.points;
+    });
+
+    return sum;   
+  });
+
+  const hasBonus = computed(() => {
+    return calcSubtotalDice.value < 21 ? false : true;
+  }); 
+
+  // FUNCTIONS RIGHT PAD
 </script>
 
 <template>
   <div class="padContainer">
 
     <table class="padLeftTable">
-      <tr v-for="item in itemsLeftPad">
+      <tr v-for="(item, key) in itemsLeftPad">
         <th class="noRightBorder">{{ item.name }}</th>
         <td class="smallDiceBox">
-          <img :src="`img/dice${ item.diceNr }.png`" class="smallDice" />
+          <img :src="`img/dice${ key }.png`" class="smallDice" />
         </td>
         <td class="description">sum of all {{ item.name }}</td>
-        <td class="score">{{ diceCalcQuantity[item.diceNr] * item.diceNr }}</td>
+        <td class="score">{{ calcPointsDice[key].points }}</td>
       </tr>
       <tr>
         <td class="description noRightBorder" colspan="4">
@@ -61,12 +86,14 @@
       </tr>
       <tr class="blueBorder">
         <th colspan="3">subtotal</th>
-        <td class="score">-</td>
+        <td class="score">{{ hasBonus ? calcSubtotalDice + 12 : calcSubtotalDice }}</td>
       </tr>
       <tr class="noBottomBorder">
         <th colspan="2">bonus</th>
         <td class="description">12 points</td>
-        <td class="score">x</td>
+        <td class="score" :class="hasBonus ? 'bonusGreen' : 'bonusRed'">
+          {{ hasBonus ? '&#x2713;' : 'x' }}
+        </td>
       </tr>
     </table>
 
@@ -74,15 +101,15 @@
       <tr v-for="item in itemsRightPad">
         <th>{{ item.name }}</th>
         <td class="description">{{ item.description }}</td>
-        <td class="score">-</td>
+        <td class="score">0</td>
       </tr>
       <tr class="blueBorder">
         <th colspan="2">subtotal</th>
-        <td class="score">-</td>
+        <td class="score">0</td>
       </tr>
       <tr class="noBottomBorder">
         <th colspan="2">total score</th>
-        <td class="score totalScoreBg">-</td>
+        <td class="score totalScoreBg">0</td>
       </tr>
     </table>
 
@@ -175,5 +202,13 @@
 
   .blueBorder {
     border-top: 2px solid #2b6981;
+  }
+
+  .bonusRed {
+    color: #a73a1c;
+  }
+
+  .bonusGreen {
+    color: #6d9a24;
   }
 </style>

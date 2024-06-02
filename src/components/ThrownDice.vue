@@ -8,7 +8,7 @@
   const rollDice = () => {
     const diceRolled = [];
 
-    for(let i = 0; diceRolled.length < dicePieces; i++) {
+    for (let i = 0; diceRolled.length < dicePieces; i++) {
       diceRolled.push(Math.ceil(Math.random() * 6));
     }
 
@@ -21,7 +21,7 @@
     <button @click="rollDice" id="btnRoll">ROLL DICE!</button>
     <div class="diceImageBox">
       <template v-if="props.modelValue.length === 0">
-        <img v-for="n in 5" :src="`img/dice${ n }Large-nb.png`" class="diceDummy">
+        <img v-for="n in 5" :src="`img/dice${ n }Large-nb.png`" class="dummyDice">
       </template>
       <template v-for="dicePiece of props.modelValue">
         <img :src="`img/dice${ dicePiece }Large-nb.png`" class="fiveDice">
@@ -46,7 +46,7 @@
   }
 
   .fiveDice,
-  .diceDummy {
+  .dummyDice {
     width: 70px;
     height: 70px;
     background-color: #F5EBE3;
@@ -58,7 +58,7 @@
     box-shadow: 1px 2px 6px rgba(53, 30, 12, 0.45);
   }
   
-  .diceDummy {
+  .dummyDice {
     opacity: 0.3;
   }
 
