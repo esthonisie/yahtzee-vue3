@@ -164,6 +164,24 @@
     6: checkFiveOfKind,
     7: calcSubtotalDice,
   };
+
+  const calcSubtotalCombi = computed(() => {
+    let sum = 0;
+
+    Object.values(combiDice).forEach(value => {
+      sum += value.value;
+    });
+
+    return sum;   
+  });
+
+  const calcTotalScore = computed(() => {
+    const leftPad = hasBonus.value ? 
+      calcSubtotalDice.value + 12 : calcSubtotalDice.value;
+    const total = leftPad + calcSubtotalCombi.value;
+
+    return total;   
+  });
 </script>
 
 <template>
@@ -204,11 +222,11 @@
       </tr>
       <tr class="blueBorder">
         <th colspan="2">subtotal</th>
-        <td class="score">0</td>
+        <td class="score">{{ calcSubtotalCombi }}</td>
       </tr>
       <tr class="noBottomBorder">
         <th colspan="2">total score</th>
-        <td class="score totalScoreBg">0</td>
+        <td class="score totalScoreBg">{{ calcTotalScore }}</td>
       </tr>
     </table>
 
