@@ -5,6 +5,8 @@
     diceRolled: Array
   });
 
+  // --------------> LEFT PAD
+
   const itemsLeftPad = {
     1: {name: "aces"},
     2: {name: "twos"},
@@ -13,18 +15,6 @@
     5: {name: "fives"},
     6: {name: "sixes"},
   };
-
-  const itemsRightPad = [
-    {name: "3 of a kind", description: "sum of all dice"},
-    {name: "4 of a kind", description: "sum of all dice"},
-    {name: "full house", description: "25 points"},
-    {name: "small straight", description: "30 points"},
-    {name: "large straight", description: "40 points"},
-    {name: "5 of a kind", description: "50 points"},
-    {name: "chance", description: "sum of all dice"},
-  ];
-
-  // FUNCTIONS LEFT PAD
 
   const calcQuantity = computed(() => {
     const quantityResult = {};
@@ -64,7 +54,116 @@
     return calcSubtotalDice.value < 21 ? false : true;
   }); 
 
-  // FUNCTIONS RIGHT PAD
+  // --------------> RIGHT PAD
+
+  const itemsRightPad = [
+    {name: "3 of a kind", description: "sum of all dice", id: 1},
+    {name: "4 of a kind", description: "sum of all dice", id: 2},
+    {name: "full house", description: "25 points", id: 3},
+    {name: "small straight", description: "30 points", id: 4},
+    {name: "large straight", description: "40 points", id: 5},
+    {name: "5 of a kind", description: "50 points", id: 6},
+    {name: "chance", description: "sum of all dice", id: 7},
+  ];
+
+  const calcOfKind = computed(() => {
+    let whatKind = 0;
+
+    Object.values(calcQuantity.value).forEach(value => {
+      value.quantity < 3 ? whatKind : whatKind = value.quantity;
+    });
+
+    return whatKind;
+  });
+
+  const checkThreeOfKind = computed(() => {
+    let points = 0;
+
+    calcOfKind.value >= 3 ? points = calcSubtotalDice.value : points;
+
+    return points;
+  });
+
+  const checkFourOfKind = computed(() => {
+    let points = 0;
+
+    calcOfKind.value >= 4 ? points = calcSubtotalDice.value : points;
+
+    return points;
+  });
+
+  const checkFiveOfKind = computed(() => {
+    let points = 0;
+
+    calcOfKind.value === 5 ? points = 50 : points;
+
+    return points;
+  });
+
+  const calcFullHouse = computed(() => {
+    let points = 0;
+
+    Object.values(calcQuantity.value).forEach(value => {
+      if (value.quantity === 2) {
+        points += 10;
+      } else if (value.quantity === 3) {
+        points += 15;
+      }
+    });
+
+    points < 25 ? points = 0 : points;
+
+    return points;
+  });
+
+  const calcStraight = computed(() => {
+    const arr = [];
+    let points = 0;
+    
+    // zero|one pattern
+    Object.values(calcQuantity.value).forEach(value => {
+      value.quantity !== 0 ? arr.push(1) : arr.push(0);
+    });
+
+    // first check if dice 3 or 4 exist (always needed in a straight)
+    for (let i = 0; i < 6; i++) {
+      if (arr[2] === 0 || arr[3] === 0) {
+        points = 0; 
+      } else if (arr[i] === 1 && arr[i] === arr[i + 1]) {
+        points += 10; 
+      }
+    }
+
+    points < 30 ? points = 0 : points;
+
+    return points;
+  });
+
+  const checkSmallStraight = computed(() => {
+    let points = 0;
+
+    calcStraight.value != 30 ? points : points = 30;
+
+    return points;
+  });
+
+  const checkLargeStraight = computed(() => {
+    let points = 0;
+
+    calcStraight.value != 40 ? points : points = 40;
+
+    return points;
+  });
+
+  const combiDice = {
+    1: checkThreeOfKind,
+    2: checkFourOfKind,
+    3: calcFullHouse,
+    4: checkSmallStraight,
+    5: checkLargeStraight,
+    6: checkFiveOfKind,
+    7: calcSubtotalDice,
+  };
 </script>
 
 <template>
@@ -101,7 +200,7 @@
       <tr v-for="item in itemsRightPad">
         <th>{{ item.name }}</th>
         <td class="description">{{ item.description }}</td>
-        <td class="score">0</td>
+        <td class="score">{{ combiDice[item.id] }}</td>
       </tr>
       <tr class="blueBorder">
         <th colspan="2">subtotal</th>
