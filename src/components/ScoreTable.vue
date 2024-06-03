@@ -142,7 +142,7 @@
   const checkSmallStraight = computed(() => {
     let points = 0;
 
-    calcStraight.value != 30 ? points : points = 30;
+    calcStraight.value != 0 ? points = 30 : points;
 
     return points;
   });
