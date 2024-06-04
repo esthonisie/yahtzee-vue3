@@ -8,12 +8,12 @@
   // --------------> LEFT PAD
 
   const itemsLeftPad = {
-    1: {name: "aces"},
-    2: {name: "twos"},
-    3: {name: "threes"},
-    4: {name: "fours"},
-    5: {name: "fives"},
-    6: {name: "sixes"},
+    1: { name: "aces" },
+    2: { name: "twos" },
+    3: { name: "threes" },
+    4: { name: "fours" },
+    5: { name: "fives" },
+    6: { name: "sixes" },
   };
 
   const calcQuantity = computed(() => {
@@ -56,14 +56,15 @@
 
   // --------------> RIGHT PAD
 
+  // combiNr is linked to the 'pointsCombination' object (see row 119)
   const itemsRightPad = [
-    {name: "3 of a kind", description: "sum of all dice", id: 1},
-    {name: "4 of a kind", description: "sum of all dice", id: 2},
-    {name: "full house", description: "25 points", id: 3},
-    {name: "small straight", description: "30 points", id: 4},
-    {name: "large straight", description: "40 points", id: 5},
-    {name: "5 of a kind", description: "50 points", id: 6},
-    {name: "chance", description: "sum of all dice", id: 7},
+    { combiNr: 1, name: "3 of a kind", description: "sum of all dice" },
+    { combiNr: 2, name: "4 of a kind", description: "sum of all dice" },
+    { combiNr: 3, name: "full house", description: "25 points" },
+    { combiNr: 4, name: "small straight", description: "30 points" },
+    { combiNr: 5, name: "large straight", description: "40 points" },
+    { combiNr: 6, name: "5 of a kind", description: "50 points" },
+    { combiNr: 7, name: "chance", description: "sum of all dice" },
   ];
 
   const calcOfKind = computed(() => {
@@ -74,30 +75,6 @@
     });
 
     return whatKind;
-  });
-
-  const checkThreeOfKind = computed(() => {
-    let points = 0;
-
-    calcOfKind.value >= 3 ? points = calcSubtotalDice.value : points;
-
-    return points;
-  });
-
-  const checkFourOfKind = computed(() => {
-    let points = 0;
-
-    calcOfKind.value >= 4 ? points = calcSubtotalDice.value : points;
-
-    return points;
-  });
-
-  const checkFiveOfKind = computed(() => {
-    let points = 0;
-
-    calcOfKind.value === 5 ? points = 50 : points;
-
-    return points;
   });
 
   const calcFullHouse = computed(() => {
@@ -139,48 +116,30 @@
     return points;
   });
 
-  const checkSmallStraight = computed(() => {
-    let points = 0;
-
-    calcStraight.value != 0 ? points = 30 : points;
-
-    return points;
+  const pointsCombination = computed(() => {
+    return {
+      1: calcOfKind.value >= 3 ? calcSubtotalDice.value : 0,  // three of kind
+      2: calcOfKind.value >= 4 ? calcSubtotalDice.value : 0,  // four of kind
+      3: calcFullHouse.value,                                 // full house
+      4: calcStraight.value != 0 ? 30 : 0,                    // small straight
+      5: calcStraight.value != 40 ? 0 : 40,                   // large straight
+      6: calcOfKind.value === 5 ? 50 : 0,                     // five of kind
+      7: calcSubtotalDice.value,                              // chance
+    }
   });
-
-  const checkLargeStraight = computed(() => {
-    let points = 0;
-
-    calcStraight.value != 40 ? points : points = 40;
-
-    return points;
-  });
-
-  const combiDice = {
-    1: checkThreeOfKind,
-    2: checkFourOfKind,
-    3: calcFullHouse,
-    4: checkSmallStraight,
-    5: checkLargeStraight,
-    6: checkFiveOfKind,
-    7: calcSubtotalDice,
-  };
 
   const calcSubtotalCombi = computed(() => {
-    let sum = 0;
+    let points = 0;
 
-    Object.values(combiDice).forEach(value => {
-      sum += value.value;
+    Object.values(pointsCombination.value).forEach(value => {
+      points += value;
     });
 
-    return sum;   
+    return points;
   });
 
   const calcTotalScore = computed(() => {
-    const leftPad = hasBonus.value ? 
-      calcSubtotalDice.value + 12 : calcSubtotalDice.value;
-    const total = leftPad + calcSubtotalCombi.value;
-
-    return total;   
+    return calcSubtotalDice.value + calcSubtotalCombi.value; 
   });
 </script>
 
@@ -215,10 +174,10 @@
     </table>
 
     <table class="padRightTable">
-      <tr v-for="item in itemsRightPad">
+      <tr v-for="(item) in itemsRightPad">
         <th>{{ item.name }}</th>
         <td class="description">{{ item.description }}</td>
-        <td class="score">{{ combiDice[item.id] }}</td>
+        <td class="score">{{ pointsCombination[item.combiNr] }}</td>
       </tr>
       <tr class="blueBorder">
         <th colspan="2">subtotal</th>
@@ -226,7 +185,7 @@
       </tr>
       <tr class="noBottomBorder">
         <th colspan="2">total score</th>
-        <td class="score totalScoreBg">{{ calcTotalScore }}</td>
+        <td class="score totalScoreBg">{{ hasBonus ? calcTotalScore + 12 : calcTotalScore }}</td>
       </tr>
     </table>
 
