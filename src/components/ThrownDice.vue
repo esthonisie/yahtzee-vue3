@@ -8,6 +8,8 @@
   const rollDice = () => {
     const diceRolled = [];
 
+    // TODO: ik zou voor de leesbaarheid diceRolled.length voor i vervangen:
+    // for (let i = 0; i < dicePieces; i++) {
     for (let i = 0; diceRolled.length < dicePieces; i++) {
       diceRolled.push(Math.ceil(Math.random() * 6));
     }

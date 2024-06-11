@@ -7,6 +7,24 @@
 
   // --------------> LEFT PAD
 
+// TODO: onderstaande combinatie van itemsLeftPad, calcQuantity en calcPointsDice
+// zijn door hun relatie / verwevenheid wat moeilijk te lezen. Zoek uit of dit nog
+// korter kan? Idee:
+
+const leftPadLabels = ["aces", "twos", "threes", "fours", "fives", "sixes"];
+
+const leftPadItems = computed(() => {
+  return leftPadLabels.map((item, index) => {
+    return { 
+        name: item,
+        points: Object.values(props.diceRolled).filter((item) => item == index + 1).length * (index + 1)
+      }
+    }
+  );
+});
+
+////
+
   const itemsLeftPad = {
     1: { name: "aces" },
     2: { name: "twos" },
@@ -147,13 +165,13 @@
   <div class="padContainer">
 
     <table class="padLeftTable">
-      <tr v-for="(item, key) in itemsLeftPad">
+      <tr v-for="(item, key) in leftPadItems">
         <th class="noRightBorder">{{ item.name }}</th>
         <td class="smallDiceBox">
           <img :src="`img/dice${ key }.png`" class="smallDice" />
         </td>
         <td class="description">sum of all {{ item.name }}</td>
-        <td class="score">{{ calcPointsDice[key].points }}</td>
+        <td class="score">{{ item.points }}</td>
       </tr>
       <tr>
         <td class="description noRightBorder" colspan="4">
